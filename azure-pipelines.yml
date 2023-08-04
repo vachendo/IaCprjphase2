@@ -1,0 +1,27 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self  # This checks out the source code from your repository
+
+- task: NodeTool@0  # This sets up Node.js, it might be necessary for building/testing your app
+  inputs:
+    versionSpec: '14.x'  # Adjust the version as per your requirements
+  displayName: 'Set up Node.js'
+
+- script: |
+    npm install  # Install Node.js dependencies
+    npm run build  # This assumes you have a build script, remove if not necessary
+  displayName: 'Build Node.js App'
+
+- script: |
+    docker build -t supervin/projectwebsiteblue:latest .
+    docker login --username $(dockerHubUsername) --password $(dockerHubPassword)
+    docker push supervin/projectwebsiteblue:latest
+  displayName: 'Build and Push Docker Image'
+  env:
+    dockerHubUsername: $(dockerHubUsername)
+    dockerHubPassword: $(dockerHubPassword)
